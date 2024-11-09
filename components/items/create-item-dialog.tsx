@@ -21,6 +21,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { Textarea } from '@/components/ui/textarea';
 import { FileUpload } from '@/components/ui/file-upload';
+import { ChevronRight } from 'lucide-react';
 
 interface Category {
   id: string;
@@ -30,6 +31,7 @@ interface Category {
   parent?: {
     name: string;
   };
+  children?: Category[];
 }
 
 interface CreateItemDialogProps {
@@ -50,7 +52,7 @@ export function CreateItemDialog({
 
   // Fetch categories when dialog opens
   useState(() => {
-    fetch('/api/categories')
+    fetch('/api/categories?includeChildren=true')
       .then((res) => res.json())
       .then(setCategories)
       .catch(console.error);
@@ -97,12 +99,15 @@ export function CreateItemDialog({
     }
   };
 
-  const renderCategoryOption = (category: Category) => (
-    <SelectItem key={category.id} value={category.id}>
-      {category.level > 0
-        ? `${category.parent?.name} > ${category.name}`
-        : category.name}
-    </SelectItem>
+  const renderCategoryOption = (category: Category, depth: number = 0) => (
+    <div key={category.id} style={{ display: 'flex', paddingLeft: `${depth * .5}rem` }}>
+      {depth > 0 && <ChevronRight className="h-4 w-4 mr-2" />} {/* Show icon for child categories */}
+      <SelectItem value={category.id}>
+        {category.name}
+      </SelectItem>
+      {/* Render children categories recursively */}
+      {category.children?.map((child) => renderCategoryOption(child, depth + 1))}
+    </div>
   );
 
   return (
@@ -150,7 +155,7 @@ export function CreateItemDialog({
                 <SelectValue placeholder="Select category" />
               </SelectTrigger>
               <SelectContent>
-                {categories.map(renderCategoryOption)}
+                {categories.map((category) => renderCategoryOption(category, 0))}
               </SelectContent>
             </Select>
           </div>
