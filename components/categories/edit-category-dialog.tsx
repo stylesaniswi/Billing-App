@@ -95,7 +95,7 @@ export function EditCategoryDialog({
 
   if (!category) return null;
 
-  const availableParentCategories = categories.filter(
+  const availableParentCategories = categories?.filter(
     (cat) => cat.id !== category.id && !cat.path?.startsWith(category.path)
   );
 
@@ -129,7 +129,7 @@ export function EditCategoryDialog({
                   <SelectValue placeholder="Select parent category" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">None</SelectItem>
+                  <SelectItem value="0">None</SelectItem>
                   {availableParentCategories.map((cat) => (
                     <SelectItem key={cat.id} value={cat.id}>
                       {cat.name}

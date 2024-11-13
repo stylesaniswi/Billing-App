@@ -35,6 +35,7 @@ interface Category {
   color: string | null;
   parentId: string | null;
   level: number;
+  children: Category[]
   _count: {
     children: number;
   };
@@ -88,69 +89,78 @@ export function CategoryList({
       });
     }
   };
+  const MAX_DEPTH = parseInt(process.env.CATEGORY_DEPTH || "3", 10); // Fetch max depth from env, default to 3
 
-  const renderCategoryRow = (category: Category) => (
-    <TableRow key={category.id}>
-      <TableCell>
-        <div className="flex items-center space-x-2">
-          <div
-            style={{ marginLeft: `${category.level * 1.5}rem` }}
-            className="flex items-center"
-          >
-            {category._count.children > 0 && (
-              <ChevronRight className="h-4 w-4 mr-2" />
+  const renderCategoryRow = (category: Category, depth: number = 0) => {
+    if (depth > MAX_DEPTH) return null;
+
+    return (
+      <>
+        <TableRow key={category.id}>
+          <TableCell>
+            <div className="flex items-center space-x-2">
+              <div
+                style={{ marginLeft: `${depth * 1.5}rem` }} // Indent based on depth
+                className="flex items-center"
+              >
+                {category._count.children > 0 && (
+                  <ChevronRight className="h-4 w-4 mr-2" />
+                )}
+                {category.name}
+              </div>
+            </div>
+          </TableCell>
+          <TableCell>{category.parent?.name || '-'}</TableCell>
+          <TableCell>{category.description || '-'}</TableCell>
+          <TableCell>
+            {category.color ? (
+              <div className="flex items-center gap-2">
+                <div
+                  className="h-4 w-4 rounded-full"
+                  style={{ backgroundColor: category.color }}
+                />
+                {category.color}
+              </div>
+            ) : (
+              '-'
             )}
-            {category.name}
-          </div>
-        </div>
-      </TableCell>
-      <TableCell>{category.parent?.name || '-'}</TableCell>
-      <TableCell>{category.description || '-'}</TableCell>
-      <TableCell>
-        {category.color ? (
-          <div className="flex items-center gap-2">
-            <div
-              className="h-4 w-4 rounded-full"
-              style={{ backgroundColor: category.color }}
-            />
-            {category.color}
-          </div>
-        ) : (
-          '-'
-        )}
-      </TableCell>
-      {canManageCategories && (
-        <TableCell>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => setEditingCategory(category)}>
-                <Pencil className="mr-2 h-4 w-4" />
-                Edit
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => setCreatingSubcategory(category)}
-              >
-                <Plus className="mr-2 h-4 w-4" />
-                Add Subcategory
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                className="text-destructive"
-                onClick={() => handleDelete(category.id)}
-              >
-                <Trash className="mr-2 h-4 w-4" />
-                Delete
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </TableCell>
-      )}
-    </TableRow>
-  );
+          </TableCell>
+          {canManageCategories && (
+            <TableCell>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                    <MoreHorizontal className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => setEditingCategory(category)}>
+                    <Pencil className="mr-2 h-4 w-4" />
+                    Edit
+                  </DropdownMenuItem>
+                  {category.level < MAX_DEPTH  && (<DropdownMenuItem
+                    onClick={() => setCreatingSubcategory(category)}
+                  >
+                    <Plus className="mr-2 h-4 w-4" />
+                    Add Subcategory
+                  </DropdownMenuItem>)}
+                  <DropdownMenuItem
+                    className="text-destructive"
+                    onClick={() => handleDelete(category.id)}
+                  >
+                    <Trash className="mr-2 h-4 w-4" />
+                    Delete
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </TableCell>
+          )}
+        </TableRow>
+        {/* Render children categories recursively */}
+        {category.children?.map((child) => renderCategoryRow(child, depth + 1))}
+      </>
+    );
+  };
 
   return (
     <>
@@ -167,7 +177,7 @@ export function CategoryList({
               )}
             </TableRow>
           </TableHeader>
-          <TableBody>{categories.map(renderCategoryRow)}</TableBody>
+          <TableBody>{categories.map((category) => renderCategoryRow(category, 0))}</TableBody>
         </Table>
       </div>
 

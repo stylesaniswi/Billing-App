@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { Textarea } from '@/components/ui/textarea';
+import { FileUpload } from '../ui/file-upload';
 
 interface Item {
   id: string;
@@ -46,6 +47,7 @@ export function EditItemDialog({
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState([]);
+  const [imageUrl, setImageUrl] = useState(item?.imageUrl);
 
   useEffect(() => {
     if (open) {
@@ -66,7 +68,7 @@ export function EditItemDialog({
     const itemData = {
       name: formData.get('name'),
       description: formData.get('description'),
-      imageUrl: formData.get('imageUrl'),
+      imageUrl: imageUrl,
       price: formData.get('price'),
       categoryId: formData.get('categoryId'),
     };
@@ -125,13 +127,8 @@ export function EditItemDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="imageUrl">Image URL</Label>
-            <Input
-              id="imageUrl"
-              name="imageUrl"
-              type="url"
-              defaultValue={item.imageUrl || ''}
-            />
+            <Label>Image</Label>
+            <FileUpload value={imageUrl} onUpload={setImageUrl} />
           </div>
 
           <div className="space-y-2">
