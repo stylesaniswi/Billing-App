@@ -48,6 +48,7 @@ model Invoice {
   tax           Float
   total         Float
   notes         String?
+  noteImages    String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   payments      Payment[]

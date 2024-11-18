@@ -19,7 +19,10 @@ interface InvoiceItem {
   quantity: number;
   unitPrice: number;
   total: number;
-  imageUrl?: string;
+  // imageUrl?: string;
+  item:{
+    imageUrl: string;
+  }
 }
 
 interface Invoice {
@@ -40,7 +43,7 @@ interface Invoice {
   tax: number;
   total: number;
   notes: string | null;
-  noteImages: string[];
+  noteImages: string;
   createdAt: string;
 }
 
@@ -198,11 +201,11 @@ export default function InvoiceDetailPage() {
           <div className="space-y-4">
             {invoice.items.map((item) => (
               <div key={item.id} className="grid grid-cols-12 gap-4 items-center">
-                {item.imageUrl && (
+                {item.item.imageUrl && (
                   <div className="col-span-2">
                     <div className="relative w-20 h-20">
                       <Image
-                        src={item.imageUrl}
+                        src={item.item.imageUrl}
                         alt={item.description}
                         fill
                         className="object-cover rounded-lg"
@@ -210,7 +213,7 @@ export default function InvoiceDetailPage() {
                     </div>
                   </div>
                 )}
-                <div className={`${item.imageUrl ? 'col-span-4' : 'col-span-6'}`}>
+                <div className={`${item.item.imageUrl ? 'col-span-4' : 'col-span-6'}`}>
                   <p className="font-medium">{item.description}</p>
                 </div>
                 <div className="col-span-2 text-right">{item.quantity}</div>
@@ -253,7 +256,7 @@ export default function InvoiceDetailPage() {
               <div>
                 <h4 className="text-sm font-medium text-muted-foreground mb-2">Attachments</h4>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {invoice.noteImages.map((imageUrl, index) => (
+                  {invoice.noteImages.split(",") .map((imageUrl, index) => (
                     <div key={index} className="relative aspect-square">
                       <Image
                         src={imageUrl}

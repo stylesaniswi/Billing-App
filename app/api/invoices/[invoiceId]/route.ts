@@ -25,7 +25,16 @@ export async function GET(
             profile: true,
           },
         },
-        items: true,
+        items: {
+          select:{
+            itemId      :true,
+            item       :true,
+            description :true,
+            quantity    :true,
+            unitPrice   :true,
+            total       :true
+          }
+        },
         payments: {
           include: {
             user: {

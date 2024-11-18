@@ -164,7 +164,7 @@ export function CreateInvoiceForm() {
             imageUrl: item.imageUrl,
           })),
           notes: formData.get("notes"),
-          noteImages: noteImages,
+          noteImages: noteImages.join(","),
         }),
       });
 

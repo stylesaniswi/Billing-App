@@ -54,7 +54,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { customerId, dueDate, items, notes } = body;
+    const { customerId, dueDate, items, notes, noteImages } = body;
 
     const invoice = await prisma.invoice.create({
       data: {
@@ -65,13 +65,15 @@ export async function POST(request: Request) {
         status: "PENDING",
         items: {
           create: items.map((item: any) => ({
+            itemId: item.itemId,
             description: item.description,
             quantity: parseInt(item.quantity),
             unitPrice: parseFloat(item.price),
             total: parseInt(item.quantity) * parseFloat(item.price),
           })),
         },
-        notes,
+        notes : notes,
+        noteImages : noteImages,
         subtotal: items.reduce((acc: number, item: any) => 
           acc + (parseInt(item.quantity) * parseFloat(item.price)), 0),
         tax: items.reduce((acc: number, item: any) => 
