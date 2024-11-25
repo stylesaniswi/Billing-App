@@ -35,6 +35,11 @@ export async function GET(
             total       :true
           }
         },
+        noteImages:{
+          select:{
+            url : true
+          }
+        },    
         payments: {
           include: {
             user: {

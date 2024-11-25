@@ -13,6 +13,12 @@ import { formatCurrency } from "@/lib/utils";
 import { InvoiceActions } from "@/components/invoices/invoice-actions";
 import Image from "next/image";
 
+interface NoteImage{
+  id: string,
+  url : string,
+
+}
+
 interface InvoiceItem {
   id: string;
   description: string;
@@ -43,7 +49,7 @@ interface Invoice {
   tax: number;
   total: number;
   notes: string | null;
-  noteImages: string;
+  noteImages: NoteImage[];
   createdAt: string;
 }
 
@@ -118,7 +124,7 @@ export default function InvoiceDetailPage() {
             invoiceId={invoice.id} 
             currentStatus={invoice.status}
             onStatusUpdate={handleStatusUpdate}
-          />
+          />    
           <Button variant="outline">
             <Download className="mr-2 h-4 w-4" />
             Download PDF
@@ -256,10 +262,10 @@ export default function InvoiceDetailPage() {
               <div>
                 <h4 className="text-sm font-medium text-muted-foreground mb-2">Attachments</h4>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {invoice.noteImages.split(",") .map((imageUrl, index) => (
+                  {invoice.noteImages.map((noteImage, index) => (
                     <div key={index} className="relative aspect-square">
                       <Image
-                        src={imageUrl}
+                        src={noteImage.url}
                         alt={`Attachment ${index + 1}`}
                         fill
                         className="object-cover rounded-lg"

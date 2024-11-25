@@ -20,6 +20,40 @@ export async function PATCH(
       where: {
         id: params.invoiceId,
       },
+      include: {
+        customer: {
+          select: {
+            name: true,
+            email: true,
+            profile: true,
+          },
+        },
+        items: {
+          select:{
+            itemId      :true,
+            item       :true,
+            description :true,
+            quantity    :true,
+            unitPrice   :true,
+            total       :true
+          }
+        },
+        noteImages:{
+          select:{
+            url : true
+          }
+        },    
+        payments: {
+          include: {
+            user: {
+              select: {
+                name: true,
+                email: true,
+              },
+            },
+          },
+        },
+      },  
       data: {
         status,
       },

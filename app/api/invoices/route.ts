@@ -73,7 +73,11 @@ export async function POST(request: Request) {
           })),
         },
         notes : notes,
-        noteImages : noteImages,
+        noteImages :{
+          create: noteImages.map((noteImage: any)=>({
+            url: noteImage,
+          }))
+        },
         subtotal: items.reduce((acc: number, item: any) => 
           acc + (parseInt(item.quantity) * parseFloat(item.price)), 0),
         tax: items.reduce((acc: number, item: any) => 
