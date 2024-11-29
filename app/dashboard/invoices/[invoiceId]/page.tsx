@@ -13,13 +13,22 @@ import { formatCurrency } from "@/lib/utils";
 import { InvoiceActions } from "@/components/invoices/invoice-actions";
 import Image from "next/image";
 
+interface NoteImage{
+  id: string,
+  url : string,
+
+}
+
 interface InvoiceItem {
   id: string;
   description: string;
   quantity: number;
   unitPrice: number;
   total: number;
-  imageUrl?: string;
+  // imageUrl?: string;
+  item:{
+    imageUrl: string;
+  }
 }
 
 interface Invoice {
@@ -40,7 +49,7 @@ interface Invoice {
   tax: number;
   total: number;
   notes: string | null;
-  noteImages: string[];
+  noteImages: NoteImage[];
   createdAt: string;
 }
 
@@ -115,7 +124,7 @@ export default function InvoiceDetailPage() {
             invoiceId={invoice.id} 
             currentStatus={invoice.status}
             onStatusUpdate={handleStatusUpdate}
-          />
+          />    
           <Button variant="outline">
             <Download className="mr-2 h-4 w-4" />
             Download PDF
@@ -198,11 +207,11 @@ export default function InvoiceDetailPage() {
           <div className="space-y-4">
             {invoice.items.map((item) => (
               <div key={item.id} className="grid grid-cols-12 gap-4 items-center">
-                {item.imageUrl && (
+                {item.item.imageUrl && (
                   <div className="col-span-2">
                     <div className="relative w-20 h-20">
                       <Image
-                        src={item.imageUrl}
+                        src={item.item.imageUrl}
                         alt={item.description}
                         fill
                         className="object-cover rounded-lg"
@@ -210,7 +219,7 @@ export default function InvoiceDetailPage() {
                     </div>
                   </div>
                 )}
-                <div className={`${item.imageUrl ? 'col-span-4' : 'col-span-6'}`}>
+                <div className={`${item.item.imageUrl ? 'col-span-4' : 'col-span-6'}`}>
                   <p className="font-medium">{item.description}</p>
                 </div>
                 <div className="col-span-2 text-right">{item.quantity}</div>
@@ -253,10 +262,10 @@ export default function InvoiceDetailPage() {
               <div>
                 <h4 className="text-sm font-medium text-muted-foreground mb-2">Attachments</h4>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {invoice.noteImages.map((imageUrl, index) => (
+                  {invoice.noteImages.map((noteImage, index) => (
                     <div key={index} className="relative aspect-square">
                       <Image
-                        src={imageUrl}
+                        src={noteImage.url}
                         alt={`Attachment ${index + 1}`}
                         fill
                         className="object-cover rounded-lg"
