@@ -54,7 +54,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { customerId, dueDate, items, notes } = body;
+    const { customerId, dueDate, items, notes, noteImages } = body;
 
     const invoice = await prisma.invoice.create({
       data: {
@@ -67,17 +67,22 @@ export async function POST(request: Request) {
           create: items.map((item: any) => ({
             description: item.description,
             quantity: parseInt(item.quantity),
-            unitPrice: parseFloat(item.price),
-            total: parseInt(item.quantity) * parseFloat(item.price),
+            unitPrice: parseFloat(item.unitPrice),
+            total: parseInt(item.quantity) * parseFloat(item.unitPrice),
           })),
         },
-        notes,
+        notes : notes,
+        noteImages :{
+          create: noteImages.map((noteImage: any)=>({
+            url: noteImage.url,
+          }))
+        },
         subtotal: items.reduce((acc: number, item: any) => 
-          acc + (parseInt(item.quantity) * parseFloat(item.price)), 0),
+          acc + (parseInt(item.quantity) * parseFloat(item.unitPrice)), 0),
         tax: items.reduce((acc: number, item: any) => 
-          acc + (parseInt(item.quantity) * parseFloat(item.price)), 0) * 0.1,
+          acc + (parseInt(item.quantity) * parseFloat(item.unitPrice)), 0) * 0.1,
         total: items.reduce((acc: number, item: any) => 
-          acc + (parseInt(item.quantity) * parseFloat(item.price)), 0) * 1.1,
+          acc + (parseInt(item.quantity) * parseFloat(item.unitPrice)), 0) * 1.1,
       },
       include: {
         customer: {
