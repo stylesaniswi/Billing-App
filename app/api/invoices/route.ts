@@ -65,6 +65,7 @@ export async function POST(request: Request) {
         status: "PENDING",
         items: {
           create: items.map((item: any) => ({
+            itemId: item.itemId,
             description: item.description,
             quantity: parseInt(item.quantity),
             unitPrice: parseFloat(item.unitPrice),
@@ -75,6 +76,7 @@ export async function POST(request: Request) {
         noteImages :{
           create: noteImages.map((noteImage: any)=>({
             url: noteImage.url,
+
           }))
         },
         subtotal: items.reduce((acc: number, item: any) => 

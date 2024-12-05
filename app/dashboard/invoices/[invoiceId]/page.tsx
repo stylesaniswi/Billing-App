@@ -14,6 +14,12 @@ import { InvoiceActions } from "@/components/invoices/invoice-actions";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 
+interface NoteImage{
+  id: string,
+  url : string,
+
+}
+
 interface InvoiceItem {
   id: string;
   name: string;
@@ -25,6 +31,8 @@ interface InvoiceItem {
   // item:{
   //   imageUrl: string;
   // }
+
+
 }
 
 interface Invoice {
@@ -129,6 +137,7 @@ export default function InvoiceDetailPage() {
           <Button onClick={() => router.push(`/dashboard/invoices/${invoice.id}/edit`)}>
             Edit Invoice
           </Button>   
+
           <Button variant="outline">
             <Download className="mr-2 h-4 w-4" />
             Download PDF
@@ -211,11 +220,11 @@ export default function InvoiceDetailPage() {
           <div className="space-y-4">
             {invoice.items.map((item) => (
               <div key={item.id} className="grid grid-cols-12 gap-4 items-center">
-                {item.imageUrl && (
+                {item.item.imageUrl && (
                   <div className="col-span-2">
                     <div className="relative w-20 h-20">
                       <Image
-                        src={item.imageUrl}
+                        src={item.item.imageUrl}
                         alt={item.description}
                         fill
                         className="object-cover rounded-lg"
