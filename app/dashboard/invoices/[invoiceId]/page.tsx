@@ -11,6 +11,7 @@ import { Download, Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { formatCurrency } from "@/lib/utils";
 import { InvoiceActions } from "@/components/invoices/invoice-actions";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 
 interface NoteImage{
@@ -21,14 +22,17 @@ interface NoteImage{
 
 interface InvoiceItem {
   id: string;
+  name: string;
   description: string;
   quantity: number;
   unitPrice: number;
   total: number;
-  // imageUrl?: string;
-  item:{
-    imageUrl: string;
-  }
+  imageUrl?: string;
+  // item:{
+  //   imageUrl: string;
+  // }
+
+
 }
 
 interface Invoice {
@@ -53,8 +57,13 @@ interface Invoice {
   createdAt: string;
 }
 
+interface NoteImage{
+  url:string;
+}
+
 export default function InvoiceDetailPage() {
   const params = useParams();
+  const router = useRouter();
   const { toast } = useToast();
   const [invoice, setInvoice] = useState<Invoice | null>(null);
   const [loading, setLoading] = useState(true);
@@ -124,7 +133,11 @@ export default function InvoiceDetailPage() {
             invoiceId={invoice.id} 
             currentStatus={invoice.status}
             onStatusUpdate={handleStatusUpdate}
-          />    
+          /> 
+          <Button onClick={() => router.push(`/dashboard/invoices/${invoice.id}/edit`)}>
+            Edit Invoice
+          </Button>   
+
           <Button variant="outline">
             <Download className="mr-2 h-4 w-4" />
             Download PDF
@@ -219,8 +232,9 @@ export default function InvoiceDetailPage() {
                     </div>
                   </div>
                 )}
-                <div className={`${item.item.imageUrl ? 'col-span-4' : 'col-span-6'}`}>
-                  <p className="font-medium">{item.description}</p>
+                <div className={`${item.imageUrl ? 'col-span-4' : 'col-span-6'}`}>
+                <p className="font-medium">{item.name}</p>
+                  <p className="text-sm">{item.description}</p>
                 </div>
                 <div className="col-span-2 text-right">{item.quantity}</div>
                 <div className="col-span-2 text-right">{formatCurrency(item.unitPrice)}</div>

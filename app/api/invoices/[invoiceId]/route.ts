@@ -60,10 +60,107 @@ export async function GET(
     if (invoice.createdById !== session.user.id && invoice.customerId !== session.user.id) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
+    const transformedInvoice = {
+      ...invoice,
+      items: invoice.items.map((item) => ({
+        itemId: item.itemId,
+        description: item.description,
+        quantity: item.quantity,
+        unitPrice: item.unitPrice,
+        total: item.total,
+        item: item.item,
+        name: item.item?.name || null, // Include item name
+        imageUrl: item.item?.imageUrl || null, // Flatten imageUrl
+      })),
+    };
 
-    return NextResponse.json(invoice);
+    return NextResponse.json(transformedInvoice);
   } catch (error) {
     console.error("[INVOICE_GET]", error);
+    return new NextResponse("Internal error", { status: 500 });
+  }
+}
+
+export async function PATCH(request: Request, { params }: { params: { invoiceId: string } }) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session) {
+      return new NextResponse("Unauthorized", { status: 401 });
+    }
+    console.log("Params:", params)
+    const { invoiceId } = params;
+   
+    if (!invoiceId) {
+      return new NextResponse("Invoice ID is required", { status: 400 });
+    }
+
+    const body = await request.json();
+    const { customerId, dueDate, items, notes, noteImages, status } = body;
+
+    const existingInvoice = await prisma.invoice.findUnique({
+      where: { id: params.invoiceId },
+    });
+
+    if (!existingInvoice) {
+      return new NextResponse("Invoice not found", { status: 404 });
+    }
+
+    const updatedInvoice = await prisma.invoice.update({
+      where: { id: params.invoiceId },
+      data: {
+        customerId,
+        dueDate: dueDate ? new Date(dueDate) : undefined,
+        status,
+        notes,
+        items: {
+          deleteMany: {}, // Remove existing items
+          create: items.map((item: any) => ({
+            itemId: item.itemId,
+            description: item.description,
+            quantity: parseInt(item.quantity),
+            unitPrice: parseFloat(item.unitPrice),
+            total: parseInt(item.quantity) * parseFloat(item.unitPrice),
+          })),
+        },
+        noteImages: {
+          deleteMany: {}, // Remove existing noteImages
+          create: noteImages.map((noteImage: any) => ({
+            url: noteImage.url,
+          })),
+        },
+        subtotal: items.reduce(
+          (acc: number, item: any) =>
+            acc + parseInt(item.quantity) * parseFloat(item.unitPrice),
+          0
+        ),
+        tax:
+          items.reduce(
+            (acc: number, item: any) =>
+              acc + parseInt(item.quantity) * parseFloat(item.unitPrice),
+            0
+          ) * 0.1,
+        total:
+          items.reduce(
+            (acc: number, item: any) =>
+              acc + parseInt(item.quantity) * parseFloat(item.unitPrice),
+            0
+          ) * 1.1,
+      },
+      include: {
+        customer: {
+          select: {
+            name: true,
+            email: true,
+            profile: true,
+          },
+        },
+        items: true,
+      },
+    });
+
+    return NextResponse.json(updatedInvoice);
+  } catch (error) {
+    console.error("[INVOICE_UPDATE]", error);
     return new NextResponse("Internal error", { status: 500 });
   }
 }

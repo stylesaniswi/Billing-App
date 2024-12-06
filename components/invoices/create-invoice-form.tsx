@@ -22,7 +22,7 @@ interface InvoiceItem {
   itemId: string | null;
   description: string;
   quantity: number;
-  price: number;
+  unitPrice: number;
   categoryId: string | null;
   imageUrl?: string;
 }
@@ -46,17 +46,31 @@ interface Customer {
   name: string;
 }
 
-export function CreateInvoiceForm() {
+interface NoteImage{
+  url:string;
+}
+
+export function CreateInvoiceForm({ initialData }: any) {
   const router = useRouter();
   const { toast } = useToast();
-  const [items, setItems] = useState<InvoiceItem[]>([
+  const [items, setItems] = useState<InvoiceItem[]>(initialData?.items || [
     { itemId: null, description: "", quantity: 1, price: 0, categoryId: null, imageUrl: "" }
   ]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [productItems, setProductItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(false);
-  const [noteImages, setNoteImages] = useState<string[]>([]);
+  const [noteImages, setNoteImages] = useState<NoteImage[]>(initialData?.noteImages ||[]);
+  const [dueDate, setDueDate] = useState(initialData ? new Date(initialData.dueDate).toISOString().split("T")[0] : '');
+  const [invoiceNote,setInvoiceNote] = useState(initialData? initialData.notes : '')
+  const [customerId , setCustomerId] = useState(initialData.customerId || '')
+
+  useEffect(() => {
+    if (initialData) {
+      setItems(initialData.items || []);
+      setNoteImages(initialData.noteImages || []);
+    }
+  }, [initialData]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -93,7 +107,7 @@ export function CreateInvoiceForm() {
   }, [toast]);
 
   const addItem = () => {
-    setItems([...items, { itemId: null, description: "", quantity: 1, price: 0, categoryId: null, imageUrl: "" }]);
+    setItems([...items, { itemId: null, description: "", quantity: 1, unitPrice: 0, categoryId: null, imageUrl: "" }]);
   };
 
   const removeItem = (index: number) => {
@@ -109,7 +123,7 @@ export function CreateInvoiceForm() {
           ...newItems[index],
           itemId: value,
           description: selectedItem.description || selectedItem.name,
-          price: selectedItem.price,
+          unitPrice: selectedItem.price,
           categoryId: selectedItem.categoryId,
           imageUrl: selectedItem.imageUrl || "",
         };
@@ -132,8 +146,14 @@ export function CreateInvoiceForm() {
     setItems(newItems);
   };
 
-  const addNoteImage = (url: string) => {
-    setNoteImages([...noteImages, url]);
+  const addNoteImage = ( url: string) => {
+    const newNoteImages = [...noteImages];
+    const index = noteImages.length
+    newNoteImages[index]={
+      ...newNoteImages[index],
+      url: url
+    }
+    setNoteImages(newNoteImages);
   };
 
   const removeNoteImage = (index: number) => {
@@ -145,43 +165,53 @@ export function CreateInvoiceForm() {
     setLoading(true);
 
     const formData = new FormData(e.currentTarget);
-    
+    const updatedInvoice = {
+      customerId: customerId ? customerId : formData.get("customer"),
+      dueDate: formData.get("dueDate"),
+      items: items.map((item) => ({
+        itemId: item.itemId,
+        description: item.description,
+        unitPrice: parseFloat(String(item.unitPrice)),
+        quantity: parseInt(String(item.quantity)),
+        categoryId: item.categoryId,
+        imageUrl: item.imageUrl,
+      })),
+      notes: formData.get("notes"),
+      status:initialData? initialData.status :"PENDING",
+      noteImages: noteImages,
+    };
+    const invoiceID = initialData ? initialData.id : null;
+  
     try {
-      const response = await fetch("/api/invoices", {
-        method: "POST",
+      const method = invoiceID ? "PATCH" : "POST"; // Dynamic HTTP method
+      const endpoint = invoiceID ? `/api/invoices/${invoiceID}` : "/api/invoices"; // Dynamic endpoint
+  
+      const response = await fetch(endpoint, {
+        method,
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          customerId: formData.get("customer"),
-          dueDate: formData.get("dueDate"),
-          items: items.map(item => ({
-            itemId: item.itemId,
-            description: item.description,
-            price: parseFloat(String(item.price)),
-            quantity: parseInt(String(item.quantity)),
-            categoryId: item.categoryId,
-            imageUrl: item.imageUrl,
-          })),
-          notes: formData.get("notes"),
-          noteImages: noteImages,
-        }),
+        body: JSON.stringify(updatedInvoice),
       });
-
-      if (!response.ok) throw new Error("Failed to create invoice");
-
+  
+      if (!response.ok) {
+        throw new Error(invoiceID ? "Failed to update invoice" : "Failed to create invoice");
+      }
+  
       const invoice = await response.json();
+  
       toast({
         title: "Success",
-        description: "Invoice created successfully",
+        description: invoiceID ? "Invoice updated successfully" : "Invoice created successfully",
       });
+  
       router.push(`/dashboard/invoices/${invoice.id}`);
       router.refresh();
     } catch (error) {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to create invoice",
+        description: invoiceID ? "Failed to update invoice" : "Failed to create invoice",
       });
     } finally {
       setLoading(false);
@@ -194,7 +224,10 @@ export function CreateInvoiceForm() {
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="customer">Customer</Label>
-            <Select name="customer" required>
+            {initialData?
+            <p className="text-lg font-bold">{initialData.customer.name}</p>
+          :
+          <Select name="customer" required>
               <SelectTrigger id="customer">
                 <SelectValue placeholder="Select customer" />
               </SelectTrigger>
@@ -206,10 +239,12 @@ export function CreateInvoiceForm() {
                 ))}
               </SelectContent>
             </Select>
+          }
+            
           </div>
           <div className="space-y-2">
             <Label htmlFor="dueDate">Due Date</Label>
-            <Input type="date" id="dueDate" name="dueDate" required />
+            <Input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} id="dueDate" name="dueDate" required />
           </div>
         </div>
 
@@ -269,8 +304,8 @@ export function CreateInvoiceForm() {
                   placeholder="Price"
                   min="0"
                   step="0.01"
-                  value={item.price}
-                  onChange={(e) => updateItem(index, "price", parseFloat(e.target.value))}
+                  value={item.unitPrice}
+                  onChange={(e) => updateItem(index, "unitPrice", parseFloat(e.target.value))}
                   required
                 />
               </div>
@@ -286,7 +321,7 @@ export function CreateInvoiceForm() {
                   variant="destructive"
                   size="icon"
                   onClick={() => removeItem(index)}
-                  disabled={items.length === 1}
+                  disabled={initialData?items.length === 0:items.length === 1}
                 >
                   <X className="h-4 w-4" />
                 </Button>
@@ -300,14 +335,14 @@ export function CreateInvoiceForm() {
 
         <div className="space-y-2">
           <Label htmlFor="notes">Notes</Label>
-          <Textarea id="notes" name="notes" placeholder="Additional notes..." />
+          <Textarea id="notes" name="notes" value={invoiceNote} onChange={(e) => setInvoiceNote(e.target.value)} placeholder="Additional notes..." />
           <div className="mt-2">
             <Label>Note Images</Label>
             <div className="grid grid-cols-3 gap-4 mt-2">
-              {noteImages.map((url, index) => (
+              {noteImages.map((noteImage, index) => (
                 <div key={index} className="relative">
                   <Image
-                    src={url}
+                    src={noteImage.url}
                     alt={`Note image ${index + 1}`}
                     width={200}
                     height={200}
@@ -338,7 +373,7 @@ export function CreateInvoiceForm() {
           Cancel
         </Button>
         <Button type="submit" disabled={loading}>
-          {loading ? "Creating..." : "Create Invoice"}
+        {loading ? "Processing..." : initialData ? "Update Invoice" : "Create Invoice"}
         </Button>
       </div>
     </form>
