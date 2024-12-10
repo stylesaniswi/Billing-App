@@ -17,7 +17,6 @@ import Image from "next/image";
 interface NoteImage{
   id: string,
   url : string,
-
 }
 
 interface InvoiceItem {
@@ -28,11 +27,6 @@ interface InvoiceItem {
   unitPrice: number;
   total: number;
   imageUrl?: string;
-  // item:{
-  //   imageUrl: string;
-  // }
-
-
 }
 
 interface Invoice {
@@ -134,7 +128,7 @@ export default function InvoiceDetailPage() {
             invoiceId={invoice.id} 
             currentStatus={invoice.status}
             onStatusUpdate={handleStatusUpdate}
-          /> 
+          />
           <Button onClick={() => router.push(`/dashboard/invoices/${invoice.id}/edit`)}>
             Edit Invoice
           </Button>   
