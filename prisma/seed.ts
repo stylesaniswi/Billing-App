@@ -19,9 +19,9 @@ async function main() {
 
   // Seed default categories
   const categories = [
-    { name: 'Services', color: '#4CAF50' },
-    { name: 'Products', color: '#2196F3' },
-    { name: 'Consulting', color: '#9C27B0' },
+    { name: 'Shirt', color: '#4CAF50' },
+    { name: 'T-shirt', color: '#2196F3' },
+    { name: 'Hoodie', color: '#9C27B0' },
   ];
 
   for (const category of categories) {
@@ -42,7 +42,7 @@ async function main() {
     },
     {
       key: 'currency',
-      value: 'USD',
+      value: 'NPR',
       type: 'STRING',
       description: 'Default currency for invoices',
     },
@@ -54,7 +54,7 @@ async function main() {
     },
     {
       key: 'payment_methods',
-      value: JSON.stringify(['CREDIT_CARD', 'PAYPAL', 'BANK_TRANSFER']),
+      value: JSON.stringify(['CREDIT_CARD', 'PAYPAL', 'BANK_TRANSFER', 'COD']),
       type: 'JSON',
       description: 'Enabled payment methods',
     },

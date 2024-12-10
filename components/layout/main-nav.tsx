@@ -44,6 +44,11 @@ const adminRoutes = [
     label: "Settings",
     href: "/dashboard/settings",
     roles: ["ADMIN"],
+  },
+  {
+    label: "Pages",
+    href: "/dashboard/pages",
+    roles: ["ADMIN"],
   }
 ];
 

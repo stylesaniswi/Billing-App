@@ -23,7 +23,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { formatCurrency } from '@/lib/utils';
 
-interface Item {
+export interface Item {
   id: string;
   name: string;
   description: string | null;
