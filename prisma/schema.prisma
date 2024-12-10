@@ -47,6 +47,7 @@ model Invoice {
   subtotal      Float
   tax           Float
   total         Float
+  prePayment    Float        @default(0)
   notes         String?
   noteImages    NoteImage[]
   createdAt     DateTime  @default(now())

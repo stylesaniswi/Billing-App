@@ -54,8 +54,18 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { customerId, dueDate, items, notes, noteImages } = body;
+    const { customerId, dueDate, items, prePayment, notes, noteImages } = body;
 
+    const itemsTotal = items.reduce((acc:number, item:any) =>
+      acc + (parseInt(item.quantity) * parseFloat(item.unitPrice)), 0);
+    
+    const tax = itemsTotal * 0.1;
+    const subtotal = itemsTotal;
+    const total = itemsTotal * 1.1 - prePayment;
+    if (prePayment > itemsTotal) {
+      throw new Error("Prepayment cannot exceed the total item cost.");
+    }
+    
     const invoice = await prisma.invoice.create({
       data: {
         number: `INV-${Date.now()}`,
@@ -79,12 +89,10 @@ export async function POST(request: Request) {
 
           }))
         },
-        subtotal: items.reduce((acc: number, item: any) => 
-          acc + (parseInt(item.quantity) * parseFloat(item.unitPrice)), 0),
-        tax: items.reduce((acc: number, item: any) => 
-          acc + (parseInt(item.quantity) * parseFloat(item.unitPrice)), 0) * 0.1,
-        total: items.reduce((acc: number, item: any) => 
-          acc + (parseInt(item.quantity) * parseFloat(item.unitPrice)), 0) * 1.1,
+        prePayment,
+        subtotal,
+        total,
+        tax
       },
       include: {
         customer: {

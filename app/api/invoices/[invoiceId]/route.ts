@@ -95,7 +95,7 @@ export async function PATCH(request: Request, { params }: { params: { invoiceId:
     }
 
     const body = await request.json();
-    const { customerId, dueDate, items, notes, noteImages, status } = body;
+    const { customerId, dueDate, items,prePayment, notes, noteImages, status } = body;
 
     const existingInvoice = await prisma.invoice.findUnique({
       where: { id: params.invoiceId },
@@ -103,6 +103,20 @@ export async function PATCH(request: Request, { params }: { params: { invoiceId:
 
     if (!existingInvoice) {
       return new NextResponse("Invoice not found", { status: 404 });
+    }
+
+    const itemsTotal = items.reduce(
+      (acc: number, item: any) =>
+        acc + parseInt(item.quantity) * parseFloat(item.unitPrice),
+      0
+    );
+    
+    const tax = itemsTotal * 0.1; 
+    const subtotal = itemsTotal ; 
+    const total = itemsTotal * 1.1 - prePayment; 
+    
+    if (prePayment > itemsTotal) {
+      throw new Error("Prepayment cannot exceed the total item cost.");
     }
 
     const updatedInvoice = await prisma.invoice.update({
@@ -128,23 +142,10 @@ export async function PATCH(request: Request, { params }: { params: { invoiceId:
             url: noteImage.url,
           })),
         },
-        subtotal: items.reduce(
-          (acc: number, item: any) =>
-            acc + parseInt(item.quantity) * parseFloat(item.unitPrice),
-          0
-        ),
-        tax:
-          items.reduce(
-            (acc: number, item: any) =>
-              acc + parseInt(item.quantity) * parseFloat(item.unitPrice),
-            0
-          ) * 0.1,
-        total:
-          items.reduce(
-            (acc: number, item: any) =>
-              acc + parseInt(item.quantity) * parseFloat(item.unitPrice),
-            0
-          ) * 1.1,
+        prePayment,
+        subtotal,
+        tax,
+        total,
       },
       include: {
         customer: {

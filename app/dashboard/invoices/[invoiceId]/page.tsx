@@ -51,6 +51,7 @@ interface Invoice {
   items: InvoiceItem[];
   subtotal: number;
   tax: number;
+  prePayment : number;
   total: number;
   notes: string | null;
   noteImages: NoteImage[];
@@ -220,11 +221,11 @@ export default function InvoiceDetailPage() {
           <div className="space-y-4">
             {invoice.items.map((item) => (
               <div key={item.id} className="grid grid-cols-12 gap-4 items-center">
-                {item.item.imageUrl && (
+                {item.imageUrl && (
                   <div className="col-span-2">
                     <div className="relative w-20 h-20">
                       <Image
-                        src={item.item.imageUrl}
+                        src={item.imageUrl}
                         alt={item.description}
                         fill
                         className="object-cover rounded-lg"
@@ -250,6 +251,10 @@ export default function InvoiceDetailPage() {
               <div className="flex justify-between">
                 <span className="font-medium">Tax (10%)</span>
                 <span>{formatCurrency(invoice.tax)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Pre Payment</span>
+                <span> - {formatCurrency(invoice.prePayment)}</span>
               </div>
               <div className="flex justify-between text-lg font-bold">
                 <span>Total</span>
