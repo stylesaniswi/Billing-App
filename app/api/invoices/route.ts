@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { prisma } from "@/lib/prisma";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { calculateTotals } from "@/app/utils/calculateTotals";
 
 export async function GET(request: Request) {
   try {
@@ -56,12 +57,7 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { customerId, dueDate, items, prePayment, notes, noteImages } = body;
 
-    const itemsTotal = items.reduce((acc:number, item:any) =>
-      acc + (parseInt(item.quantity) * parseFloat(item.unitPrice)), 0);
-    
-    const tax = itemsTotal * 0.1;
-    const subtotal = itemsTotal;
-    const total = itemsTotal * 1.1 - prePayment;
+    const {itemsTotal,tax,subtotal,total} = calculateTotals(items,prePayment,10)
     if (prePayment > itemsTotal) {
       throw new Error("Prepayment cannot exceed the total item cost.");
     }
