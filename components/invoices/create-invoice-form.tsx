@@ -63,7 +63,8 @@ export function CreateInvoiceForm({ initialData }: any) {
   const [noteImages, setNoteImages] = useState<NoteImage[]>(initialData?.noteImages ||[]);
   const [dueDate, setDueDate] = useState(initialData ? new Date(initialData.dueDate).toISOString().split("T")[0] : '');
   const [invoiceNote,setInvoiceNote] = useState(initialData? initialData.notes : '')
-  const [customerId , setCustomerId] = useState(initialData.customerId || '')
+  const [customerId , setCustomerId] = useState(initialData?.customerId || '')
+  const [prePayment , setPrePayment] = useState(initialData?.prePayment || 0)
 
   useEffect(() => {
     if (initialData) {
@@ -176,6 +177,7 @@ export function CreateInvoiceForm({ initialData }: any) {
         categoryId: item.categoryId,
         imageUrl: item.imageUrl,
       })),
+      prePayment: parseFloat(String(formData.get("prepayment"))),
       notes: formData.get("notes"),
       status:initialData? initialData.status :"PENDING",
       noteImages: noteImages,
@@ -331,6 +333,19 @@ export function CreateInvoiceForm({ initialData }: any) {
           <Button type="button" variant="outline" onClick={addItem}>
             Add Item
           </Button>
+        </div>
+
+        <div>
+          <Label htmlFor="prepayment">Pre Payment</Label>
+          <Input
+          name="prepayment" 
+          type="number"
+          placeholder="Enter Pre Payment"
+          min="0"
+          step="0.01"
+          value={prePayment}
+          onChange={(e) => setPrePayment(e.target.value)}
+          />
         </div>
 
         <div className="space-y-2">

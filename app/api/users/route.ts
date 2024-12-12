@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { prisma } from "@/lib/prisma";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { hash } from "bcryptjs";
 
 export async function GET(request: Request) {
   try {
@@ -44,13 +45,13 @@ export async function POST(request: Request) {
     if (existingUser) {
       return new NextResponse("User already exists", { status: 400 });
     }
-
+    const hashed_password = await hash(password, 12);
     const user = await prisma.user.create({
       data: {
         name,
         email,
         role,
-        password,
+        password:hashed_password,
       },
       select: {
         id: true,
