@@ -65,6 +65,7 @@ export function CreateInvoiceForm({ initialData }: any) {
   const [invoiceNote,setInvoiceNote] = useState(initialData? initialData.notes : '')
   const [customerId , setCustomerId] = useState(initialData?.customerId || '')
   const [prePayment , setPrePayment] = useState(initialData?.prePayment || 0)
+  const [status,setStatus] = useState(initialData?.status || 'PENDING')
 
   useEffect(() => {
     if (initialData) {
@@ -179,7 +180,7 @@ export function CreateInvoiceForm({ initialData }: any) {
       })),
       prePayment: parseFloat(String(formData.get("prepayment"))),
       notes: formData.get("notes"),
-      status:initialData? initialData.status :"PENDING",
+      status: status,
       noteImages: noteImages,
     };
     const invoiceID = initialData ? initialData.id : null;
@@ -197,7 +198,8 @@ export function CreateInvoiceForm({ initialData }: any) {
       });
   
       if (!response.ok) {
-        throw new Error(invoiceID ? "Failed to update invoice" : "Failed to create invoice");
+        const errorText = await response.text();
+        throw new Error (errorText)
       }
   
       const invoice = await response.json();
@@ -209,11 +211,16 @@ export function CreateInvoiceForm({ initialData }: any) {
   
       router.push(`/dashboard/invoices/${invoice.id}`);
       router.refresh();
-    } catch (error) {
+    } catch (error:unknown) {
+      let errorMessage = invoiceID ? "Failed to update invoice" : "Failed to create invoice";
+
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
       toast({
         variant: "destructive",
         title: "Error",
-        description: invoiceID ? "Failed to update invoice" : "Failed to create invoice",
+        description: errorMessage
       });
     } finally {
       setLoading(false);
@@ -223,7 +230,7 @@ export function CreateInvoiceForm({ initialData }: any) {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-3 gap-4">
           <div className="space-y-2">
             <Label htmlFor="customer">Customer</Label>
             {initialData?
@@ -243,6 +250,28 @@ export function CreateInvoiceForm({ initialData }: any) {
             </Select>
           }
             
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="status">Status</Label>
+          <Select name="status" value={status} onValueChange={(value) => setStatus(value)} required>
+              <SelectTrigger id="status">
+                <SelectValue placeholder="Select Status" />
+              </SelectTrigger>
+              <SelectContent>
+                  <SelectItem key="PENDING" value="PENDING">
+                    PENDING
+                  </SelectItem>
+                  <SelectItem key="PAID" value="PAID">
+                    PAID
+                  </SelectItem>
+                  <SelectItem key="OVERDUE" value="OVERDUE">
+                    OVERDUE
+                  </SelectItem>
+                  <SelectItem key="CANCELLED" value="CANCELLED">
+                    CANCEL
+                  </SelectItem>
+              </SelectContent>
+            </Select>            
           </div>
           <div className="space-y-2">
             <Label htmlFor="dueDate">Due Date</Label>

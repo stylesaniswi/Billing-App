@@ -7,6 +7,7 @@ interface Item {
     itemsTotal: number;
     tax: number;
     subtotal: number;
+    subtotalWithGst :number;
     total: number;
   }
   
@@ -23,8 +24,22 @@ interface Item {
   
     const tax = itemsTotal * (taxRate / 100);
     const subtotal = itemsTotal;
+    const subtotalWithGst = itemsTotal+tax;
     const total = itemsTotal + tax - prePayment;
   
-    return { itemsTotal, tax, subtotal, total };
+    return { itemsTotal, tax, subtotal,subtotalWithGst, total };
   };
   
+  export const updateStatus = (
+    prePayment :number =0,
+    total : number,
+    status? :string
+  ) : string =>{
+    if (prePayment === total) {
+      return "PAID";
+    }
+    if (status === "PAID" && prePayment !== total) {
+      return "PENDING";
+    }
+    return status ? status : "PENDING";
+  }

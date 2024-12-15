@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { prisma } from "@/lib/prisma";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import { calculateTotals } from "@/app/utils/calculateTotals";
+import { calculateTotals, updateStatus } from "@/app/utils/calculateTotals";
 
 export async function GET(
   request: Request,
@@ -106,18 +106,19 @@ export async function PATCH(request: Request, { params }: { params: { invoiceId:
       return new NextResponse("Invoice not found", { status: 404 });
     }
 
-    const {itemsTotal,tax,subtotal,total} = calculateTotals(items,prePayment,10)
+    const {itemsTotal,tax,subtotal,subtotalWithGst,total} = calculateTotals(items,prePayment,10)
     
-    if (prePayment > itemsTotal) {
-      throw new Error("Prepayment cannot exceed the total item cost.");
+    if (prePayment > subtotalWithGst) {
+      return new NextResponse("Prepayment cannot exceed the total item cost.", { status: 404 });
     }
 
+    const updated_status = updateStatus(prePayment,subtotalWithGst,status)
     const updatedInvoice = await prisma.invoice.update({
       where: { id: params.invoiceId },
       data: {
         customerId,
         dueDate: dueDate ? new Date(dueDate) : undefined,
-        status,
+        status: updated_status,
         notes,
         items: {
           deleteMany: {}, // Remove existing items
@@ -154,7 +155,7 @@ export async function PATCH(request: Request, { params }: { params: { invoiceId:
 
     return NextResponse.json(updatedInvoice);
   } catch (error) {
-    console.error("[INVOICE_UPDATE]", error);
+    console.error("[INVOICE_UPDATE]: ", error);
     return new NextResponse("Internal error", { status: 500 });
   }
 }
