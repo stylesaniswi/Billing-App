@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { prisma } from "@/lib/prisma";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import { calculateTotals } from "@/app/utils/calculateTotals";
+import { calculateTotals, updateStatus } from "@/app/utils/calculateTotals";
 
 export async function GET(request: Request) {
   try {
@@ -57,18 +57,18 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { customerId, dueDate, items, prePayment, notes, noteImages } = body;
 
-    const {itemsTotal,tax,subtotal,total} = calculateTotals(items,prePayment,10)
-    if (prePayment > itemsTotal) {
-      throw new Error("Prepayment cannot exceed the total item cost.");
+    const {itemsTotal,tax,subtotal,subtotalWithGst,total} = calculateTotals(items,prePayment,10)
+    if (prePayment > subtotalWithGst) {
+      return new NextResponse("Prepayment cannot exceed the total item cost.", { status: 404 });
     }
-    
+    const updated_status = updateStatus(prePayment,subtotalWithGst)
     const invoice = await prisma.invoice.create({
       data: {
         number: `INV-${Date.now()}`,
         createdById: session.user.id,
         customerId,
         dueDate: new Date(dueDate),
-        status: "PENDING",
+        status: updated_status,
         items: {
           create: items.map((item: any) => ({
             itemId: item.itemId,
