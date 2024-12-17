@@ -4,13 +4,13 @@ import { useEffect, useState } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { ItemList } from "@/components/items/item-list";
+import { Item, ItemList } from "@/components/items/item-list";
 import { CreateItemDialog } from "@/components/items/create-item-dialog";
 
 export default function ItemsPage() {
   const { toast } = useToast();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
-  const [items, setItems] = useState([]);
+  const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -51,12 +51,12 @@ export default function ItemsPage() {
       <ItemList
         items={items}
         onItemUpdated={(updatedItem) => {
-          setItems(items.map(item =>
+          setItems(items.map((item: Item) =>
             item.id === updatedItem.id ? updatedItem : item
-          ));
+          ))
         }}
         onItemDeleted={(deletedId) => {
-          setItems(items.filter(item => item.id !== deletedId));
+          setItems(items.filter((item : Item) => item.id !== deletedId));
         }}
       />
 
