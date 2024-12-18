@@ -13,6 +13,7 @@ import { Plus } from "lucide-react";
 import { CreateInvoiceForm } from "./create-invoice-form";
 
 export function CreateInvoiceButton() {
+  
   return (
     <Dialog>
       <DialogTrigger asChild>

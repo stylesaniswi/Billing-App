@@ -162,6 +162,17 @@ export function CreateInvoiceForm({ initialData }: any) {
     setNoteImages(noteImages.filter((_, i) => i !== index));
   };
 
+  const calculateTotalPayment = () => {
+  let total = 0;
+  for (const item of items) {
+    total += item.quantity * item.unitPrice;
+    }
+    // const tax = total * 0.10;
+    const totalprice = total ;
+  return totalprice.toFixed(2); 
+  }; 
+  
+ 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
@@ -230,7 +241,7 @@ export function CreateInvoiceForm({ initialData }: any) {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="space-y-4">
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-3 gap-4 box-shadow">
           <div className="space-y-2">
             <Label htmlFor="customer">Customer</Label>
             {initialData?
@@ -279,11 +290,11 @@ export function CreateInvoiceForm({ initialData }: any) {
           </div>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-4 invoice-items box-shadow">
           <Label>Items</Label>
           {items.map((item, index) => (
             <div key={index} className="grid grid-cols-12 gap-4 items-start">
-              <div className="col-span-3">
+              <div className="col-span-4">
                 <Select
                   value={item.itemId || undefined}
                   onValueChange={(value) => updateItem(index, "itemId", value)}
@@ -311,15 +322,8 @@ export function CreateInvoiceForm({ initialData }: any) {
                   </SelectContent>
                 </Select>
               </div>
+              
               <div className="col-span-3">
-                <Input
-                  placeholder="Description"
-                  value={item.description}
-                  onChange={(e) => updateItem(index, "description", e.target.value)}
-                  required
-                />
-              </div>
-              <div className="col-span-2">
                 <Input
                   type="number"
                   placeholder="Qty"
@@ -329,7 +333,7 @@ export function CreateInvoiceForm({ initialData }: any) {
                   required
                 />
               </div>
-              <div className="col-span-2">
+              <div className="col-span-4">
                 <Input
                   type="number"
                   placeholder="Price"
@@ -340,13 +344,7 @@ export function CreateInvoiceForm({ initialData }: any) {
                   required
                 />
               </div>
-              <div className="col-span-1">
-                <FileUpload
-                  value={item.imageUrl}
-                  onUpload={(url) => updateItemImage(index, url)}
-                />
-              </div>
-              <div className="col-span-1">
+              <div className="col-span-1 text-right">
                 <Button
                   type="button"
                   variant="destructive"
@@ -357,6 +355,22 @@ export function CreateInvoiceForm({ initialData }: any) {
                   <X className="h-4 w-4" />
                 </Button>
               </div>
+              <div className="col-span-7">
+                <Textarea
+                  className="min-110"
+                  placeholder="Description"
+                  value={item.description}
+                  onChange={(e) => updateItem(index, "description", e.target.value)}
+                  required
+                />
+              </div>
+              <div className="col-span-4">
+                <FileUpload
+                  value={item.imageUrl}
+                  onUpload={(url) => updateItemImage(index, url)}
+                />
+              </div>
+              
             </div>
           ))}
           <Button type="button" variant="outline" onClick={addItem}>
@@ -364,7 +378,20 @@ export function CreateInvoiceForm({ initialData }: any) {
           </Button>
         </div>
 
-        <div>
+        <div className="grid grid-cols-3 gap-4 box-shadow">
+          <div>
+          <Label htmlFor="totalpayment">Total Payment(exclusive of tax)</Label>
+          <Input
+          name="totalpayment" 
+          type="number"
+          placeholder="Total Payment"
+          min="0"
+          step="0.01"
+          value={calculateTotalPayment()}
+          
+            />
+          </div>
+          <div>
           <Label htmlFor="prepayment">Pre Payment</Label>
           <Input
           name="prepayment" 
@@ -374,17 +401,31 @@ export function CreateInvoiceForm({ initialData }: any) {
           step="0.01"
           value={prePayment}
           onChange={(e) => setPrePayment(e.target.value)}
-          />
+            />
+          </div>
+          <div>
+          <Label htmlFor="remainingpayment">Remaining Payment</Label>
+          <Input
+          name="remainingpayment" 
+          type="number"
+          placeholder="Remaining Payment"
+          min="0"
+          step="0.01"
+          value={(calculateTotalPayment() - prePayment).toFixed(2)}
+        
+            />
+          </div>
+          
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-2 box-shadow">
           <Label htmlFor="notes">Notes</Label>
           <Textarea id="notes" name="notes" value={invoiceNote} onChange={(e) => setInvoiceNote(e.target.value)} placeholder="Additional notes..." />
           <div className="mt-2">
             <Label>Note Images</Label>
             <div className="grid grid-cols-3 gap-4 mt-2">
               {noteImages.map((noteImage, index) => (
-                <div key={index} className="relative">
+                <div key={index} className="relative note-images">
                   <Image
                     src={noteImage.url}
                     alt={`Note image ${index + 1}`}
@@ -412,7 +453,7 @@ export function CreateInvoiceForm({ initialData }: any) {
         </div>
       </div>
 
-      <div className="flex justify-end space-x-4">
+      <div className="flex justify-end space-x-4 ">
         <Button type="button" variant="outline" onClick={() => router.back()}>
           Cancel
         </Button>
