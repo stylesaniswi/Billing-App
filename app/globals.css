@@ -80,3 +80,53 @@
     @apply bg-background text-foreground;
   }
 }
+
+.container {
+  margin: auto;
+}
+
+/* tbody tr:nth-child(even) {
+  background: #f1f1f1;
+} */
+.min-110 {
+  min-height: 110px;
+}
+.invoice-items .grid:not(:first-of-type) {
+  border-top: 2px solid #ccc;
+  padding-top: 15px;
+}
+.note-images img {
+  width: 100%;
+  min-height: 300px;
+  max-height: 300px;
+}
+.box-shadow {
+  border-radius: 6px;
+  box-shadow: 0 0 2px 2px #efefef;
+  padding: 10px 15px 15px;
+}
+.text-right {
+  text-align: right;
+}
+a.transition-colors.hover\:text-primary.text-foreground {
+  position: relative;
+}
+a.transition-colors.hover\:text-primary.text-foreground:after {
+  content: "";
+  display: block;
+  border-bottom: 2px solid;
+  position: absolute;
+  width: 105%;
+  bottom: -19px;
+}
+
+.bg-f1 {
+  background: #f1f1f1;
+}
+
+@media (min-width: 1536px) {
+  .container {
+    max-width: 1440px;
+    margin: auto;
+  }
+}

@@ -7,8 +7,11 @@ import { CreateInvoiceButton } from '@/components/invoices/create-invoice-button
 import { InvoiceFilters } from '@/components/invoices/invoice-filters';
 import { exportToExcel } from '@/lib/export';
 import { useToast } from '@/hooks/use-toast';
+import { useRouter } from 'next/navigation';
+import { Plus } from 'lucide-react';
 
 export default function InvoicesPage() {
+  const router = useRouter();
   const { toast } = useToast();
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [dateRange, setDateRange] = useState<{
@@ -45,12 +48,19 @@ export default function InvoicesPage() {
       });
     }
   };
+  const handleNavigate = () => {
+    router.push("/dashboard/invoices/create");
+  };
 
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold tracking-tight">Invoices</h1>
-        <CreateInvoiceButton />
+        {/* <CreateInvoiceButton /> */}
+           <Button onClick={handleNavigate}>
+          <Plus className="mr-2 h-4 w-4" />
+          Create Invoice
+        </Button>
       </div>
       <InvoiceFilters
         status={filterStatus}

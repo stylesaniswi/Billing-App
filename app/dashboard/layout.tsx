@@ -10,7 +10,7 @@ export default function DashboardLayout({
   return (
     <div className="flex min-h-screen flex-col">
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-14 items-center">
+        <div className="container flex h-14 items-center p-6 py-0">
           <MainNav />
           <div className="ml-auto flex items-center space-x-4">
             <ModeToggle />
@@ -19,7 +19,7 @@ export default function DashboardLayout({
         </div>
       </header>
       <main className="flex-1">
-        <div className="container py-6">
+        <div className="container p-6">
           {children}
         </div>
       </main>

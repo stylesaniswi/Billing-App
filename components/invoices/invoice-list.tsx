@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Eye, MoreHorizontal } from "lucide-react";
+import { Eye, MoreHorizontal, Pencil } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -37,6 +37,9 @@ interface Invoice {
   customer: {
     name: string;
   };
+  prePayment: number;
+  subtotal: number;
+  tax: number;
   total: number;
   status: string;
   createdAt: string;
@@ -84,7 +87,8 @@ export function InvoiceList({ status, dateRange }: InvoiceListProps) {
           <TableRow>
             <TableHead>Number</TableHead>
             <TableHead>Customer</TableHead>
-            <TableHead>Amount</TableHead>
+            <TableHead>Total</TableHead>
+            <TableHead>Remaning Amount</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Date</TableHead>
             <TableHead className="w-[100px]">Actions</TableHead>
@@ -93,8 +97,10 @@ export function InvoiceList({ status, dateRange }: InvoiceListProps) {
         <TableBody>
           {invoices.map((invoice) => (
             <TableRow key={invoice.id}>
-              <TableCell>{invoice.number}</TableCell>
+              
+              <TableCell><Link href={`/dashboard/invoices/${invoice.id}`}>{invoice.number}</Link></TableCell>
               <TableCell>{invoice.customer.name}</TableCell>
+              <TableCell>{formatCurrency(invoice.subtotal + invoice.tax)}</TableCell>
               <TableCell>{formatCurrency(invoice.total)}</TableCell>
               <TableCell>
                 <Badge variant={
@@ -120,9 +126,17 @@ export function InvoiceList({ status, dateRange }: InvoiceListProps) {
                         View
                       </Link>
                     </DropdownMenuItem>
+
+                    <DropdownMenuItem asChild>
+                      <Link href={`/dashboard/invoices/${invoice.id}/edit`}>
+                        <Pencil className="mr-2 h-4 w-4" />
+                      Edit
+                      </Link>
+                    </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
-              </TableCell>
+                </TableCell>
+                
             </TableRow>
           ))}
         </TableBody>
