@@ -24,7 +24,7 @@ export default function ProfilePage() {
     name: '',
     email: '',
     phone: '',
-    password: '••••••••'
+    password: ''
   });
   const [passwordVisibility, setPasswordVisibility] = useState({
     current: false,
@@ -41,7 +41,6 @@ export default function ProfilePage() {
       const data = await response.json();
       setUser({
         ...data,
-        password: '••••••••',
         phone: data.phone || '+1 234 567 8900' // Fallback if phone not in DB
       });
     } catch (error) {
@@ -139,7 +138,7 @@ export default function ProfilePage() {
               <div className="flex-grow">
                 <Label>Password</Label>
                 <div className="flex items-center">
-                  <p className="text-lg">{user.password}</p>
+                  <p className="text-lg">********</p>
                   <Button
                     variant="ghost"
                     size="sm"

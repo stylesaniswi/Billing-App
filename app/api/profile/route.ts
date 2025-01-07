@@ -20,6 +20,7 @@ export async function GET(request: Request) {
         role: true,
         createdAt: true,
         updatedAt: true,
+        password: true,
       },
     });
 
