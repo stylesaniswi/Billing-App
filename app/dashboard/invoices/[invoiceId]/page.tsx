@@ -23,6 +23,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { InvoicePDFTemplate } from "@/components/invoices/invoice-pdf-template";
 
 
 interface NoteImage{
@@ -76,6 +77,7 @@ export default function InvoiceDetailPage() {
   const [isDialogOpen, setDialogOpen] = useState(false);
   const [invoiceImage, setInvoiceImage] = useState<string | null>(null);
   const invoiceRef = useRef<HTMLDivElement | null>(null);
+  const pdfTemplateRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const fetchInvoice = async () => {
@@ -134,8 +136,14 @@ export default function InvoiceDetailPage() {
   }
   
   const handlePreview = async () => {    
-    if (invoiceRef.current) {
-      const canvas = await html2canvas(invoiceRef.current, { backgroundColor: "#ffffff", scale: 2});
+    if (pdfTemplateRef.current) {
+      const canvas = await html2canvas(pdfTemplateRef.current, {
+        backgroundColor: "#ffffff",
+        scale: 2,
+        logging: false,
+        useCORS: true,
+        allowTaint: true
+      });
       const image = canvas.toDataURL("image/png");
       setInvoiceImage(image); 
       setDialogOpen(true); 
@@ -327,6 +335,10 @@ export default function InvoiceDetailPage() {
             </CardContent>
           </Card>
         )}
+      </div>
+
+      <div style={{ position: 'absolute', left: '-9999px' }}>
+        <InvoicePDFTemplate ref={pdfTemplateRef} invoice={invoice} />
       </div>
 
       <Dialog open={isDialogOpen} onOpenChange={setDialogOpen}>
