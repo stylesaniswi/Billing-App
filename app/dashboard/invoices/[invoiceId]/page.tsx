@@ -286,10 +286,10 @@ export default function InvoiceDetailPage() {
                   <span className="font-medium">Subtotal</span>
                   <span>{formatCurrency(invoice.subtotal)}</span>
                 </div>
-                <div className="flex justify-between">
+                {invoice.tax != 0 && <div className="flex justify-between">
                   <span className="font-medium">Tax (10%)</span>
                   <span>{formatCurrency(invoice.tax)}</span>
-                </div>
+                </div>}
                 <div className="flex justify-between">
                   <span>Pre Payment</span>
                   <span> - {formatCurrency(invoice.prePayment)}</span>
@@ -342,7 +342,7 @@ export default function InvoiceDetailPage() {
       </div>
 
       <Dialog open={isDialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>Invoice Preview</DialogTitle>
             <DialogDescription>Review the invoice before downloading.</DialogDescription>

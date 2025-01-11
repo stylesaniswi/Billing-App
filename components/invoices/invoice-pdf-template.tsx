@@ -203,10 +203,10 @@ export const InvoicePDFTemplate = forwardRef<HTMLDivElement, InvoicePDFTemplateP
                   <span className="font-medium">Subtotal</span>
                   <span>{formatCurrency(invoice.subtotal)}</span>
                 </div>
-                <div className="flex justify-between">
+                {invoice.tax != 0 && <div className="flex justify-between">
                   <span className="font-medium">Tax (10%)</span>
                   <span>{formatCurrency(invoice.tax)}</span>
-                </div>
+                </div>}
                 <div className="flex justify-between">
                   <span>Pre Payment</span>
                   <span>- {formatCurrency(invoice.prePayment)}</span>

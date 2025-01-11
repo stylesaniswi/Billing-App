@@ -14,7 +14,7 @@ interface Item {
   export const calculateTotals = (
     items: Item[],
     prePayment: number = 0, 
-    taxRate: number 
+    taxRate: number
   ): Totals => {
     const itemsTotal = items.reduce(
       (acc: number, item: Item) =>
