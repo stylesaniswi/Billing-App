@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams } from "next/navigation";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
@@ -13,6 +13,18 @@ import { formatCurrency } from "@/lib/utils";
 import { InvoiceActions } from "@/components/invoices/invoice-actions";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { InvoicePDFTemplate } from "@/components/invoices/invoice-pdf-template";
+
 
 interface NoteImage{
   id: string,
@@ -62,6 +74,10 @@ export default function InvoiceDetailPage() {
   const { toast } = useToast();
   const [invoice, setInvoice] = useState<Invoice | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isDialogOpen, setDialogOpen] = useState(false);
+  const [invoiceImage, setInvoiceImage] = useState<string | null>(null);
+  const invoiceRef = useRef<HTMLDivElement | null>(null);
+  const pdfTemplateRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const fetchInvoice = async () => {
@@ -118,6 +134,33 @@ export default function InvoiceDetailPage() {
   if (!invoice) {
     return <div>Invoice not found</div>;
   }
+  
+  const handlePreview = async () => {    
+    if (pdfTemplateRef.current) {
+      const canvas = await html2canvas(pdfTemplateRef.current, {
+        backgroundColor: "#ffffff",
+        scale: 2,
+        logging: false,
+        useCORS: true,
+        allowTaint: true
+      });
+      const image = canvas.toDataURL("image/png");
+      setInvoiceImage(image); 
+      setDialogOpen(true); 
+    }
+  };
+
+  const handleDownloadPDF = () => {
+    if (!invoiceImage) return;
+
+    const pdf = new jsPDF("p", "mm", "a4");
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = (pdfWidth * 297) / 210; 
+
+    pdf.addImage(invoiceImage, "PNG", 0, 0, pdfWidth, pdfHeight);
+    pdf.save(`invoice_${new Date().getTime()}.pdf`);
+  };
+
 
   return (
     <div className="space-y-6">
@@ -133,7 +176,7 @@ export default function InvoiceDetailPage() {
             Edit Invoice
           </Button>   
 
-          <Button variant="outline">
+          <Button onClick={handlePreview} variant="outline">
             <Download className="mr-2 h-4 w-4" />
             Download PDF
           </Button>
@@ -144,153 +187,197 @@ export default function InvoiceDetailPage() {
         </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Customer Details</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <dl className="space-y-2">
-              <div>
-                <dt className="text-sm font-medium text-muted-foreground">Name</dt>
-                <dd>{invoice.customer.name}</dd>
-              </div>
-              <div>
-                <dt className="text-sm font-medium text-muted-foreground">Email</dt>
-                <dd>{invoice.customer.email}</dd>
-              </div>
-              {invoice.customer.profile && (
-                <>
-                  <div>
-                    <dt className="text-sm font-medium text-muted-foreground">Business</dt>
-                    <dd>{invoice.customer.profile.businessName}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-sm font-medium text-muted-foreground">Address</dt>
-                    <dd>{invoice.customer.profile.address}</dd>
-                  </div>
-                </>
-              )}
-            </dl>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Invoice Details</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <dl className="space-y-2">
-              <div>
-                <dt className="text-sm font-medium text-muted-foreground">Status</dt>
-                <dd>
-                  <Badge variant={
-                    invoice.status === "PAID" ? "success" : 
-                    invoice.status === "OVERDUE" ? "destructive" : 
-                    invoice.status === "CANCELLED" ? "secondary" :
-                    "warning"
-                  }>
-                    {invoice.status}
-                  </Badge>
-                </dd>
-              </div>
-              <div>
-                <dt className="text-sm font-medium text-muted-foreground">Due Date</dt>
-                <dd>{format(new Date(invoice.dueDate), "PPP")}</dd>
-              </div>
-              <div>
-                <dt className="text-sm font-medium text-muted-foreground">Created</dt>
-                <dd>{format(new Date(invoice.createdAt), "PPP")}</dd>
-              </div>
-            </dl>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Items</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {invoice.items.map((item) => (
-              <div key={item.id} className="grid grid-cols-12 gap-4 items-center">
-                {item.imageUrl && (
-                  <div className="col-span-2">
-                    <div className="relative w-20 h-20">
-                      <Image
-                        src={item.imageUrl}
-                        alt={item.description}
-                        fill
-                        className="object-cover rounded-lg"
-                      />
-                    </div>
-                  </div>
-                )}
-                <div className={`${item.imageUrl ? 'col-span-4' : 'col-span-6'}`}>
-                <p className="font-medium">{item.name}</p>
-                  <p className="text-sm">{item.description}</p>
+      <div ref={invoiceRef} className="container" >
+        <div className="grid md:grid-cols-2">
+          <Card>
+            <CardHeader>
+              <CardTitle>Customer Details</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <dl className="space-y-2">
+                <div>
+                  <dt className="text-sm font-medium text-muted-foreground">Name</dt>
+                  <dd>{invoice.customer.name}</dd>
                 </div>
-                <div className="col-span-2 text-right">{item.quantity}</div>
-                <div className="col-span-2 text-right">{formatCurrency(item.unitPrice)}</div>
-                <div className="col-span-2 text-right">{formatCurrency(item.total)}</div>
-              </div>
-            ))}
-            <Separator />
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <span className="font-medium">Subtotal</span>
-                <span>{formatCurrency(invoice.subtotal)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="font-medium">Tax (10%)</span>
-                <span>{formatCurrency(invoice.tax)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Pre Payment</span>
-                <span> - {formatCurrency(invoice.prePayment)}</span>
-              </div>
-              <div className="flex justify-between text-lg font-bold">
-                <span>Total</span>
-                <span>{formatCurrency(invoice.total)}</span>
+                <div>
+                  <dt className="text-sm font-medium text-muted-foreground">Email</dt>
+                  <dd>{invoice.customer.email}</dd>
+                </div>
+                {invoice.customer.profile && (
+                  <>
+                    <div>
+                      <dt className="text-sm font-medium text-muted-foreground">Business</dt>
+                      <dd>{invoice.customer.profile.businessName}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-sm font-medium text-muted-foreground">Address</dt>
+                      <dd>{invoice.customer.profile.address}</dd>
+                    </div>
+                  </>
+                )}
+              </dl>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Invoice Details</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <dl className="space-y-2">
+                <div>
+                  <dt className="text-sm font-medium text-muted-foreground">Status</dt>
+                  <dd>
+                    <Badge variant={
+                      invoice.status === "PAID" ? "success" : 
+                      invoice.status === "OVERDUE" ? "destructive" : 
+                      invoice.status === "CANCELLED" ? "secondary" :
+                      "warning"
+                    }>
+                      {invoice.status}
+                    </Badge>
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-sm font-medium text-muted-foreground">Due Date</dt>
+                  <dd>{format(new Date(invoice.dueDate), "PPP")}</dd>
+                </div>
+                <div>
+                  <dt className="text-sm font-medium text-muted-foreground">Created</dt>
+                  <dd>{format(new Date(invoice.createdAt), "PPP")}</dd>
+                </div>
+              </dl>
+            </CardContent>
+          </Card>
+        </div>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Items</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {invoice.items.map((item) => (
+                <div key={item.id} className="grid grid-cols-12 gap-4 items-center">
+                  {item.imageUrl && (
+                    <div className="col-span-2">
+                      <div className="relative w-20 h-20">
+                        <Image
+                          src={item.imageUrl}
+                          alt={item.description}
+                          fill
+                          className="object-cover rounded-lg"
+                        />
+                      </div>
+                    </div>
+                  )}
+                  <div className={`${item.imageUrl ? 'col-span-4' : 'col-span-6'}`}>
+                  <p className="font-medium">{item.name}</p>
+                    <p className="text-sm">{item.description}</p>
+                  </div>
+                  <div className="col-span-2 text-right">{item.quantity}</div>
+                  <div className="col-span-2 text-right">{formatCurrency(item.unitPrice)}</div>
+                  <div className="col-span-2 text-right">{formatCurrency(item.total)}</div>
+                </div>
+              ))}
+              <Separator />
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <span className="font-medium">Subtotal</span>
+                  <span>{formatCurrency(invoice.subtotal)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-medium">Tax (10%)</span>
+                  <span>{formatCurrency(invoice.tax)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Pre Payment</span>
+                  <span> - {formatCurrency(invoice.prePayment)}</span>
+                </div>
+                <div className="flex justify-between text-lg font-bold">
+                  <span>Total</span>
+                  <span>{formatCurrency(invoice.total)}</span>
+                </div>
               </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {(invoice.notes || invoice.noteImages?.length > 0) && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Additional Information</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {invoice.notes && (
-              <div className="mb-4">
-                <h4 className="text-sm font-medium text-muted-foreground mb-2">Notes</h4>
-                <p className="whitespace-pre-wrap">{invoice.notes}</p>
-              </div>
-            )}
-            {invoice.noteImages?.length > 0 && (
-              <div>
-                <h4 className="text-sm font-medium text-muted-foreground mb-2">Attachments</h4>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {invoice.noteImages.map((noteImage, index) => (
-                    <div key={index} className="relative aspect-square">
-                      <Image
-                        src={noteImage.url}
-                        alt={`Attachment ${index + 1}`}
-                        fill
-                        className="object-cover rounded-lg"
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
           </CardContent>
         </Card>
-      )}
+
+        {(invoice.notes || invoice.noteImages?.length > 0) && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Additional Information</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {invoice.notes && (
+                <div className="mb-4">
+                  <h4 className="text-sm font-medium text-muted-foreground mb-2">Notes</h4>
+                  <p className="whitespace-pre-wrap">{invoice.notes}</p>
+                </div>
+              )}
+              {invoice.noteImages?.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-medium text-muted-foreground mb-2">Attachments</h4>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {invoice.noteImages.map((noteImage, index) => (
+                      <div key={index} className="relative aspect-square">
+                        <Image
+                          src={noteImage.url}
+                          alt={`Attachment ${index + 1}`}
+                          fill
+                          className="object-cover rounded-lg"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+      </div>
+
+      <div style={{ position: 'absolute', left: '-9999px' }}>
+        <InvoicePDFTemplate ref={pdfTemplateRef} invoice={invoice} />
+      </div>
+
+      <Dialog open={isDialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Invoice Preview</DialogTitle>
+            <DialogDescription>Review the invoice before downloading.</DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col items-center">
+            {invoiceImage ? (
+              <img
+                src={invoiceImage}
+                alt="Invoice Preview"
+                className="w-full h-auto rounded-lg"
+              />
+            ) : (
+              <p>Generating preview...</p>
+            )}
+            <div className="mt-4 flex justify-end gap-4">
+              <Button
+              variant="destructive"
+                onClick={() => setDialogOpen(false)}
+                className="btn btn-secondary"
+              >
+                Close
+              </Button>
+              <Button
+              variant="default"
+                onClick={handleDownloadPDF}
+                className="btn btn-primary"
+              >
+                <Download className="mr-2 h-4 w-4" />
+                Download Invoice
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+      
     </div>
   );
 }
