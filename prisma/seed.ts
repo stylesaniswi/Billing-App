@@ -48,7 +48,7 @@ async function main() {
     },
     {
       key: 'tax_rate',
-      value: '10',
+      value: '0',
       type: 'NUMBER',
       description: 'Default tax rate percentage',
     },
