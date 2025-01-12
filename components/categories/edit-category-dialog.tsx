@@ -27,6 +27,7 @@ interface Category {
   color: string | null;
   parentId: string | null;
   level: number;
+  path: string | null;
 }
 
 interface EditCategoryDialogProps {
@@ -96,7 +97,7 @@ export function EditCategoryDialog({
   if (!category) return null;
 
   const availableParentCategories = categories?.filter(
-    (cat) => cat.id !== category.id && !cat.path?.startsWith(category.path)
+    (cat) => cat.id !== category.id && !cat.path?.startsWith(category.path ?? '')
   );
 
   return (

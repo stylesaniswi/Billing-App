@@ -28,7 +28,8 @@ import { useSession } from 'next-auth/react';
 import { EditCategoryDialog } from './edit-category-dialog';
 import { CreateCategoryDialog } from './create-category-dialog';
 
-interface Category {
+export interface Category {
+  path: string | null;
   id: string;
   name: string;
   description: string | null;
@@ -91,7 +92,7 @@ export function CategoryList({
   };
   const MAX_DEPTH = parseInt(process.env.CATEGORY_DEPTH || "3", 10); // Fetch max depth from env, default to 3
 
-  const renderCategoryRow = (category: Category, depth: number = 0) => {
+  const renderCategoryRow = (category: Category, depth: number = 0): JSX.Element | null => {
     if (depth > MAX_DEPTH) return null;
 
     return (
@@ -180,14 +181,20 @@ export function CategoryList({
           <TableBody>{categories.map((category) => renderCategoryRow(category, 0))}</TableBody>
         </Table>
       </div>
-
       <EditCategoryDialog
-        category={editingCategory}
-        categories={categories}
+        category={editingCategory ? { ...editingCategory, path: editingCategory.path } : null}
+        categories={categories.map(category => ({ ...category, path: category.path }))}
         open={!!editingCategory}
         onOpenChange={(open) => !open && setEditingCategory(null)}
         onSuccess={(updatedCategory) => {
-          onCategoryUpdated(updatedCategory);
+          const updatedCategoryWithChildrenAndCount = {
+            ...updatedCategory,
+            children: [],
+            _count: {
+              children: 0,
+            },
+          };
+          onCategoryUpdated(updatedCategoryWithChildrenAndCount);
           setEditingCategory(null);
         }}
       />

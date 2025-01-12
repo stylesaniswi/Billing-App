@@ -162,13 +162,13 @@ export function CreateInvoiceForm({ initialData }: any) {
     setNoteImages(noteImages.filter((_, i) => i !== index));
   };
 
-  const calculateTotalPayment = () => {
+  const calculateTotalPayment = () : Number => {
     let total = 0;
     for (const item of items) {
       total += item.quantity * item.unitPrice;
       }
     const totalprice = total ;
-    return totalprice.toFixed(2); 
+    return Number(totalprice.toFixed(2)); 
   }; 
   
  
@@ -381,13 +381,12 @@ export function CreateInvoiceForm({ initialData }: any) {
           <div>
           <Label htmlFor="totalpayment">Total Payment(exclusive of tax)</Label>
           <Input
-          name="totalpayment" 
-          type="number"
-          placeholder="Total Payment"
-          min="0"
-          step="0.01"
-          value={calculateTotalPayment()}
-          
+              name="totalpayment" 
+              type="number"
+              placeholder="Total Payment"
+              min="0"
+              step="0.01"
+              value={calculateTotalPayment().toString()}
             />
           </div>
           <div>
@@ -405,16 +404,14 @@ export function CreateInvoiceForm({ initialData }: any) {
           <div>
           <Label htmlFor="remainingpayment">Remaining Payment</Label>
           <Input
-          name="remainingpayment" 
-          type="number"
-          placeholder="Remaining Payment"
-          min="0"
-          step="0.01"
-          value={(calculateTotalPayment() - prePayment).toFixed(2)}
-        
+              name="remainingpayment" 
+              type="number"
+              placeholder="Remaining Payment"
+              min="0"
+              step="0.01"
+              value={(Number(calculateTotalPayment()) - parseFloat(prePayment)).toFixed(2)}
             />
           </div>
-          
         </div>
 
         <div className="space-y-2 box-shadow">

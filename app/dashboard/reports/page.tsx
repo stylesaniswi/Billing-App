@@ -9,6 +9,7 @@ import { TopCustomers } from "@/components/reports/top-customers";
 import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { DateRange } from "react-day-picker";
 
 export default function ReportsPage() {
   const { toast } = useToast();
@@ -44,7 +45,7 @@ export default function ReportsPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold tracking-tight">Reports</h1>
         <div className="flex items-center gap-4">
-          <DatePickerWithRange date={dateRange} setDate={setDateRange} />
+          <DatePickerWithRange date={dateRange} setDate={(date: DateRange) => setDateRange({ from: date.from ?? new Date(), to: date.to ?? new Date() })} />
           <Button onClick={handleExport}>
             <Download className="mr-2 h-4 w-4" />
             Export Report

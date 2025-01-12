@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { prisma } from "@/lib/prisma";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import { ConfigType } from "@prisma/client";
 
 export async function GET() {
   try {
@@ -27,7 +26,7 @@ export async function POST(request: Request) {
     const config = await prisma.config.create({
       data: {
         key,
-        value: type === ConfigType.JSON ? JSON.stringify(value) : String(value),
+        value: type === 'JSON' ? JSON.stringify(value) : String(value),
         type,
         description,
       },

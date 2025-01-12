@@ -5,14 +5,14 @@ import { useSession } from 'next-auth/react';
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { CategoryList } from '@/components/categories/category-list';
+import { Category, CategoryList } from '@/components/categories/category-list';
 import { CreateCategoryDialog } from '@/components/categories/create-category-dialog';
 
 export default function CategoriesPage() {
   const { data: session } = useSession();
   const { toast } = useToast();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
-  const [categories, setCategories] = useState([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
 
   const canManageCategories =
@@ -59,7 +59,7 @@ export default function CategoriesPage() {
         categories={categories}
         onCategoryUpdated={(updatedCategory) => {
           setCategories(
-            categories.map((cat) =>
+            categories.map((cat: Category) =>
               cat.id === updatedCategory.id ? updatedCategory : cat
             )
           );
@@ -75,8 +75,7 @@ export default function CategoriesPage() {
         onSuccess={(newCategory) => {
           setCategories([...categories, newCategory]);
           setShowCreateDialog(false);
-        }}
-      />
+        } } parentCategory={null} categories={[]}      />
     </div>
   );
 }

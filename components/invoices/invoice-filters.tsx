@@ -75,11 +75,11 @@ export function InvoiceFilters({
             <Calendar
               initialFocus
               mode="range"
-              defaultMonth={date.from}
-              selected={date}
+              defaultMonth={date.from ? date.from : undefined}
+              selected={date.from && date.to ? { from: date.from, to: date.to } : undefined}
               onSelect={(selectedDate) => {
-                setDate(selectedDate || { from: null, to: null });
-                onDateChange(selectedDate || { from: null, to: null });
+                setDate(selectedDate ? { from: selectedDate.from ?? null, to: selectedDate.to ?? null } : { from: null, to: null });
+                onDateChange(selectedDate ? { from: selectedDate.from ?? null, to: selectedDate.to ?? null } : { from: null, to: null });
               }}
               numberOfMonths={2}
             />
