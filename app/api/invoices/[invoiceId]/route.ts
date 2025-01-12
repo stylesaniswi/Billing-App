@@ -106,7 +106,15 @@ export async function PATCH(request: Request, { params }: { params: { invoiceId:
       return new NextResponse("Invoice not found", { status: 404 });
     }
 
-    const {itemsTotal,tax,subtotal,subtotalWithGst,total} = calculateTotals(items,prePayment,10)
+    const taxRate = await prisma.config.findUnique({
+      where: {
+        key: 'tax_rate',
+      },
+    });
+
+    let taxRateValue = taxRate == null ? 10 : Number(taxRate.value);
+
+    const {itemsTotal,tax,subtotal,subtotalWithGst,total} = calculateTotals(items,prePayment,taxRateValue)
     
     if (prePayment > subtotalWithGst) {
       return new NextResponse("Prepayment cannot exceed the total item cost.", { status: 404 });

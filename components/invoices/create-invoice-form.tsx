@@ -163,13 +163,12 @@ export function CreateInvoiceForm({ initialData }: any) {
   };
 
   const calculateTotalPayment = () => {
-  let total = 0;
-  for (const item of items) {
-    total += item.quantity * item.unitPrice;
-    }
-    // const tax = total * 0.10;
+    let total = 0;
+    for (const item of items) {
+      total += item.quantity * item.unitPrice;
+      }
     const totalprice = total ;
-  return totalprice.toFixed(2); 
+    return totalprice.toFixed(2); 
   }; 
   
  

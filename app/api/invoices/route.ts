@@ -54,10 +54,17 @@ export async function POST(request: Request) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
+    const taxRate = await prisma.config.findUnique({
+      where: {
+        key: 'tax_rate',
+      },
+    });
+
+    let taxRateValue = taxRate == null ? 10 : Number(taxRate.value);
     const body = await request.json();
     const { customerId, dueDate, items, prePayment, notes, noteImages } = body;
 
-    const {itemsTotal,tax,subtotal,subtotalWithGst,total} = calculateTotals(items,prePayment,10)
+    const {itemsTotal,tax,subtotal,subtotalWithGst,total} = calculateTotals(items,prePayment,taxRateValue)
     if (prePayment > subtotalWithGst) {
       return new NextResponse("Prepayment cannot exceed the total item cost.", { status: 404 });
     }

@@ -51,7 +51,7 @@ export function DashboardStats() {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">
-            ${stats.totalRevenue.toLocaleString()}
+            {stats.totalRevenue.toLocaleString()}
           </div>
           <p className="text-xs text-muted-foreground">
             +20% from last month
