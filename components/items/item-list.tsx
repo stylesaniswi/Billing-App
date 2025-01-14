@@ -29,6 +29,7 @@ export interface Item {
   description: string | null;
   imageUrl: string | null;
   price: number;
+  categoryId: string | null;
   category: {
     name: string;
   } | null;
@@ -141,13 +142,13 @@ export function ItemList({
           </TableBody>
         </Table>
       </div>
-
       <EditItemDialog
         item={editingItem}
         open={!!editingItem}
         onOpenChange={(open) => !open && setEditingItem(null)}
         onSuccess={(updatedItem) => {
-          onItemUpdated(updatedItem);
+          const updatedItemWithCategory = { ...updatedItem, category: { name: updatedItem.categoryId || '' } };
+          onItemUpdated(updatedItemWithCategory);
           setEditingItem(null);
         }}
       />

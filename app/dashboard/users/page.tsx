@@ -191,8 +191,8 @@ export default function UsersPage() {
         open={!!editingUser}
         onOpenChange={(open) => !open && setEditingUser(null)}
         onSuccess={(updatedUser) => {
-          setUsers(users.map(user =>
-            user.id === updatedUser.id ? updatedUser : user
+          setUsers(users.map((user) =>
+            user.id === updatedUser.id ? { ...user, ...updatedUser } : user
           ));
           setEditingUser(null);
         }}

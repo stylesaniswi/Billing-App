@@ -128,7 +128,7 @@ export function EditItemDialog({
 
           <div className="space-y-2">
             <Label>Image</Label>
-            <FileUpload value={imageUrl} onUpload={setImageUrl} />
+            <FileUpload value={imageUrl || ''} onUpload={(url) => setImageUrl(url || undefined)} />
           </div>
 
           <div className="space-y-2">

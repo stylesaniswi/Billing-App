@@ -1,5 +1,4 @@
 import { prisma } from './prisma';
-import { ConfigType } from '@prisma/client';
 
 export async function getConfig(key: string) {
   const config = await prisma.config.findUnique({
@@ -7,21 +6,20 @@ export async function getConfig(key: string) {
   });
 
   if (!config) return null;
-
   switch (config.type) {
-    case ConfigType.NUMBER:
+    case 'NUMBER':
       return parseFloat(config.value);
-    case ConfigType.BOOLEAN:
+    case 'BOOLEAN':
       return config.value === 'true';
-    case ConfigType.JSON:
+    case 'JSON':
       return JSON.parse(config.value);
     default:
       return config.value;
   }
 }
 
-export async function setConfig(key: string, value: any, type: ConfigType) {
-  const stringValue = type === ConfigType.JSON ? JSON.stringify(value) : String(value);
+export async function setConfig(key: string, value: any, type: string) {
+  const stringValue = type === "JSON" ? JSON.stringify(value) : String(value);
 
   return prisma.config.upsert({
     where: { key },

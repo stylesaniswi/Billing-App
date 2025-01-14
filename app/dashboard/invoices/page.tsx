@@ -3,9 +3,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { InvoiceList } from '@/components/invoices/invoice-list';
-import { CreateInvoiceButton } from '@/components/invoices/create-invoice-button';
 import { InvoiceFilters } from '@/components/invoices/invoice-filters';
-import { exportToExcel } from '@/lib/export';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import { Plus } from 'lucide-react';

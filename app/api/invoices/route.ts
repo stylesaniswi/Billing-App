@@ -50,7 +50,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session) {
+    if (!session || !session.user.id) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
@@ -68,7 +68,7 @@ export async function POST(request: Request) {
     if (prePayment > subtotalWithGst) {
       return new NextResponse("Prepayment cannot exceed the total item cost.", { status: 404 });
     }
-    const updated_status = updateStatus(prePayment,subtotalWithGst)
+    const updated_status = updateStatus(prePayment, subtotalWithGst);
     const invoice = await prisma.invoice.create({
       data: {
         number: `INV-${Date.now()}`,
